@@ -9,7 +9,8 @@
 
 namespace electron {
 
-class NativeBrowserViewViews : public NativeBrowserView {
+class NativeBrowserViewViews : public NativeBrowserView,
+                               public views::WidgetDelegate {
  public:
   explicit NativeBrowserViewViews(
       InspectableWebContents* inspectable_web_contents);
@@ -26,6 +27,13 @@ class NativeBrowserViewViews : public NativeBrowserView {
   void SetBounds(const gfx::Rect& bounds) override;
   gfx::Rect GetBounds() override;
   void SetBackgroundColor(SkColor color) override;
+  void UpdateDraggableRegions(
+      const std::vector<mojom::DraggableRegionPtr>& regions) override;
+
+  // views::WidgetDelegate:
+  bool ShouldDescendIntoChildForEventHandling(
+      gfx::NativeView child,
+      const gfx::Point& location) override;
 
  private:
   void ResetAutoResizeProportions();
@@ -39,6 +47,8 @@ class NativeBrowserViewViews : public NativeBrowserView {
   bool auto_vertical_proportion_set_ = false;
   float auto_vertical_proportion_height_ = 0.;
   float auto_vertical_proportion_top_ = 0.;
+
+  std::unique_ptr<SkRegion> draggable_region_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeBrowserViewViews);
 };

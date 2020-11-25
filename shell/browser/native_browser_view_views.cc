@@ -22,6 +22,26 @@ void NativeBrowserViewViews::SetAutoResizeFlags(uint8_t flags) {
   ResetAutoResizeProportions();
 }
 
+bool NativeBrowserViewViews::ShouldDescendIntoChildForEventHandling(
+    gfx::NativeView child,
+    const gfx::Point& location) {
+  views::WebView* wv =
+      static_cast<views::WebView*>(GetInspectableWebContents()->GetWebView());
+  if (child->Contains(wv->web_contents()->GetNativeView())) {
+    // App window should claim mouse events that fall within the draggable
+    // region.
+    return !draggable_region_.get() ||
+           !draggable_region_->contains(location.x(), location.y());
+  }
+
+  return true;
+}
+
+void NativeBrowserViewViews::UpdateDraggableRegions(
+    const std::vector<mojom::DraggableRegionPtr>& regions) {
+  draggable_regions_ = DraggableRegionsToSkRegion(regions);
+}
+
 void NativeBrowserViewViews::SetAutoResizeProportions(
     const gfx::Size& window_size) {
   if ((auto_resize_flags_ & AutoResizeFlags::kAutoResizeHorizontal) &&
